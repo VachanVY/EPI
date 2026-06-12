@@ -1,9 +1,24 @@
+#include <cctype>
 #include <string>
 
 #include "test_framework/generic_test.h"
 using std::string;
 bool IsPalindrome(const string& s) {
-  // TODO - you fill in here.
+  int i = 0, j = s.size() - 1;
+  while (i < j) { // valid => (alpha num)
+    // skip i until valid
+    while (!isalnum(s[i]) && i < j) {i++;}
+
+    // skip j until valid
+    while (!isalnum(s[j]) && i < j) {j--;}
+
+    // compare // ignore case
+    if (tolower(s[i]) != tolower(s[j]))
+      return false;
+
+    // increment/decrement i and j
+    i++; j--;
+  }
   return true;
 }
 
