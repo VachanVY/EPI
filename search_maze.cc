@@ -1,4 +1,3 @@
-#include <istream>
 #include <string>
 #include <vector>
 
@@ -6,6 +5,7 @@
 #include "test_framework/serialization_traits.h"
 #include "test_framework/test_failure.h"
 #include "test_framework/timed_executor.h"
+using namespace std;
 using std::vector;
 enum class Color { kWhite, kBlack };
 struct Coordinate {
@@ -15,10 +15,67 @@ struct Coordinate {
 
   int x, y;
 };
-vector<Coordinate> SearchMaze(vector<vector<Color>> maze, const Coordinate& s,
+
+void dfs(
+  vector<vector<Color>>& maze,
+  vector<Coordinate>& curr_path,
+  vector<vector<bool>>& visited,
+  vector<Coordinate>& result,
+  const Coordinate& curr,
+  const Coordinate& e) {
+
+  if (!result.empty())
+      return;
+
+  int m = maze.size(), n = maze[0].size();
+
+  if (curr.x < 0 || curr.x >= m ||
+      curr.y < 0 || curr.y >= n)
+      return;
+
+  if (maze[curr.x][curr.y] == Color::kBlack ||
+      visited[curr.x][curr.y])
+      return;
+
+  visited[curr.x][curr.y] = true;
+  curr_path.push_back(curr);
+
+  if (curr == e) {
+      result = curr_path;
+      return;
+  }
+
+  static const int dirs[4][2] = {
+      {-1, 0},
+      {0, 1},
+      {1, 0},
+      {0, -1}
+  };
+
+  for (const auto& d : dirs) {
+      dfs(maze, curr_path, visited, result,
+          {curr.x + d[0], curr.y + d[1]}, e);
+  }
+
+  curr_path.pop_back();
+
+  /* Gets exponentially high searches. Anyway not needed*/
+  // visited[curr.x][curr.y] = false;
+}
+
+vector<Coordinate> SearchMaze(vector<vector<Color>> maze,
+                              const Coordinate& s,
                               const Coordinate& e) {
-  // TODO - you fill in here.
-  return {};
+  vector<vector<bool>> visited(
+      maze.size(),
+      vector<bool>(maze[0].size(), false));
+
+  vector<Coordinate> curr_path;
+  vector<Coordinate> result;
+
+  dfs(maze, curr_path, visited, result, s, e);
+
+  return result;
 }
 
 namespace test_framework {
