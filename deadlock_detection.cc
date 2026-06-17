@@ -6,13 +6,39 @@
 #include "test_framework/timed_executor.h"
 using std::vector;
 
+enum Color {
+  kWhite, // unvisited
+  kGray,  // visited
+  kBlack  // visited and path_visited
+};
 struct GraphVertex {
+  Color color = kWhite;
   vector<GraphVertex*> edges;
 };
 
-bool IsDeadlocked(vector<GraphVertex>* graph) {
-  // TODO - you fill in here.
-  return true;
+/// return true if cycle else false
+bool dfs(
+  GraphVertex& vertex
+) {
+  vertex.color = kBlack; // visited and pathvisited
+
+  for (auto nei : vertex.edges) {
+    if (nei->color == kWhite) continue;
+    if (nei->color == kBlack)
+      return true;
+    if (dfs(*nei)) return true;
+  }
+  vertex.color = kGray;
+  return false;
+}
+
+bool IsDeadlocked(vector<GraphVertex>& graph) {
+  for (auto& vertex: graph) {
+    if (vertex.color == kWhite && dfs(vertex)) {
+      return true;
+    }
+  }
+  return false;
 }
 struct Edge {
   int from;
@@ -43,7 +69,7 @@ bool HasCycleWrapper(TimedExecutor& executor, int num_nodes,
     graph[e.from].edges.push_back(&graph[e.to]);
   }
 
-  return executor.Run([&] { return IsDeadlocked(&graph); });
+  return executor.Run([&] { return IsDeadlocked(graph); });
 }
 
 int main(int argc, char* argv[]) {
