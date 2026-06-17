@@ -3,11 +3,37 @@
 
 #include "test_framework/generic_test.h"
 #include "test_framework/timed_executor.h"
+using namespace std;
 using std::deque;
 using std::vector;
 
-void FlipColor(int x, int y, vector<deque<bool>>* image_ptr) {
-  // TODO - you fill in here.
+void dfs(
+  int cx, int cy,
+  bool initClr,
+  vector<deque<bool>>& image
+) {
+  int ny = image.size(), nx = image[0].size();
+  if (cx < 0 || cx >= nx || cy < 0 || cy >= ny)
+    return;
+  if (image[cx][cy] != initClr) 
+    return;
+
+  image[cx][cy] = !initClr;
+
+  int dirs[4][2] = {
+    {-1, 0}, 
+    {0, 1},
+    {1, 0},
+    {0, -1}       
+  };
+  for (auto& dxy : dirs) {
+    dfs(cx + dxy[0], cy + dxy[1], initClr, image);
+  }
+}
+
+void FlipColor(int x, int y, vector<deque<bool>>& image_ptr) {
+  bool initClr = image_ptr[x][y];
+  dfs(x, y, initClr, image_ptr);
   return;
 }
 vector<vector<int>> FlipColorWrapper(TimedExecutor& executor, int x, int y,
@@ -23,7 +49,7 @@ vector<vector<int>> FlipColorWrapper(TimedExecutor& executor, int x, int y,
     b.push_back(tmp);
   }
 
-  executor.Run([&] { FlipColor(x, y, &b); });
+  executor.Run([&] { FlipColor(x, y, b); });
 
   image.resize(b.size());
 
